@@ -26,3 +26,52 @@ Repository for medical_AI_final-project in fastcampus
 - 4) 모델 컴파일
 - 5) 모델 평가: 평가 metric으로 모델의 정확도 확인
 - 6) 결과 분석: 샘플 추출 후, label과 prediction 비교
+
+
+
+from google.colab import files
+files.upload()  # kaggle.json 업로드
+
+!mkdir -p ~/.kaggle
+!cp kaggle.json ~/.kaggle/
+!chmod 600 ~/.kaggle/kaggle.json
+
+!kaggle datasets download -d paultimothymooney/chest-xray-pneumonia
+
+!rm -rf /content/chest_xray  # 먼저 기존 폴더 삭제
+!unzip chest-xray-pneumonia.zip -d /content
+
+
+!mv /content/chest_xray/chest_xray/* /content/chest_xray/ #중첩 폴더 제거
+!rm -r /content/chest_xray/chest_xray
+
+
+
+
+
+# 코랩 content에서 데이터 가져와서 train/validation/test별로 csv 파일 생성
+
+def get_dataset(kind):
+
+  base_dir = '/content/chest_xray/'
+  kinds = kind
+  lab = ['NORMAL', 'PNEUMONIA']
+  paths = []
+  labels = []
+
+  for l in lab:
+    path = os.path.join(base_dir, kinds, l)
+    files = os.listdir(path)
+    for f in files:
+      img_path = os.path.join(path, f)
+      paths.append(img_path)
+      labels.append(l)
+
+
+  df = pd.DataFrame({'paths':paths, 'label':labels})
+  df.to_csv(f"/content/DATA/csv/{kind}_list.csv")
+
+os.makedirs("/content/DATA/csv", exist_ok=True)
+data_train = get_dataset('train')
+data_test = get_dataset('test')
+data_val = get_dataset('val')
